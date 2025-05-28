@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "901197727801",
+    "project_id": "esign-26b5b",
+    "storage_bucket": "esign-26b5b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:901197727801:android:a2b4bab6e76b6c1e6365e8",
+        "android_client_info": {
+          "package_name": "com.example.e_sign"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCou6LPeK53xU2iagfF_TZ30wqjnBTrqIg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
