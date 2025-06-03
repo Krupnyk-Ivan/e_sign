@@ -1,9 +1,13 @@
 import 'package:e_sign/pages/register_page.dart';
+import 'package:e_sign/services/database_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import '../services/auth_service.dart';
 import '../pages/list_apply_page.dart';
+import '../pages/admin_page.dart';
+import 'reset_password_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -21,15 +25,38 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController controllerEmail = TextEditingController();
   TextEditingController controllerPassword = TextEditingController();
   String erorMessege = '';
+  void resetpassword() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const ResetPasswordPage()));
+  }
+
   void signIn() async {
     try {
-      await authService.value.signIn(
+      final userCredential = await authService.value.signIn(
         email: controllerEmail.text,
         password: controllerPassword.text,
       );
-      Navigator.of(
-        context,
-      ).push(MaterialPageRoute(builder: (context) => const ListApplyPage()));
+      final id = userCredential.user?.uid;
+      DataSnapshot? snapshot = await DatabaseService().read(path: "users/$id");
+      print(snapshot?.value);
+      final role = snapshot!.child('role').value?.toString();
+
+      if (snapshot!.child('role').value?.toString() == 'admin') {
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (context) => const AdminPage()));
+      }
+      if (snapshot!.child('role').value?.toString() == 'applicant') {
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (context) => const ListApplyPage()));
+      }
+      if (snapshot!.child('role').value?.toString() == 'reviewer') {
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (context) => const ListApplyPage()));
+      }
     } on FirebaseAuthException catch (e) {
       setState(() {
         erorMessege = e.message ?? 'This is not working';
@@ -46,11 +73,11 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      body: new Container(
-        padding: new EdgeInsets.all(32),
+    return Scaffold(
+      body: Container(
+        padding: EdgeInsets.all(32),
         child: Center(
-          child: new Column(
+          child: Column(
             children: <Widget>[
               SizedBox(height: 30),
 
@@ -103,7 +130,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   TextButton(
-                    onPressed: () {},
+                    onPressed: resetpassword,
                     child: Text(
                       'Forgot Password?',
                       style: TextStyle(

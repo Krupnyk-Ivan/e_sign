@@ -10,6 +10,8 @@ class ListApplyPage extends StatefulWidget {
 class _ListApplyPage extends State<ListApplyPage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: AppBar(title: Text("Mock")));
+    return Scaffold(
+      appBar: AppBar(title: Text("Mock"), automaticallyImplyLeading: false),
+    );
   }
 }

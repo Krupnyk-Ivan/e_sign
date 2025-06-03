@@ -2,6 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import '../services/auth_service.dart';
+import 'package:firebase_database/firebase_database.dart';
+import '../services/database_service.dart';
+import 'login_page.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
@@ -21,9 +24,16 @@ class _RegisterPage extends State<RegisterPage> {
   String erorMessege = '';
   void register() async {
     try {
-      await authService.value.createAccount(
+      final userCredential = await authService.value.createAccount(
         email: controllerEmail.text,
         password: controllerPassword.text,
+      );
+      final uid = userCredential.user!.uid;
+
+      await DatabaseService().addUser(
+        uid: uid,
+        email: controllerEmail.text,
+        role: 'admin',
       );
     } on FirebaseAuthException catch (e) {
       setState(() {
@@ -33,13 +43,19 @@ class _RegisterPage extends State<RegisterPage> {
     }
   }
 
+  void login() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const LoginPage()));
+  }
+
   @override
   Widget build(BuildContext context) {
-    return new Scaffold(
-      body: new Container(
-        padding: new EdgeInsets.all(32),
+    return Scaffold(
+      body: Container(
+        padding: EdgeInsets.all(32),
         child: Center(
-          child: new Column(
+          child: Column(
             children: <Widget>[
               SizedBox(height: 30),
 
@@ -203,7 +219,7 @@ class _RegisterPage extends State<RegisterPage> {
                   Container(
                     child: Center(
                       child: TextButton(
-                        onPressed: register,
+                        onPressed: login,
                         child: Text(
                           "Sign in here",
                           style: TextStyle(

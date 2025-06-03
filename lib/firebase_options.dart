@@ -46,6 +46,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '901197727801',
     projectId: 'esign-26b5b',
     authDomain: 'esign-26b5b.firebaseapp.com',
+    databaseURL: 'https://esign-26b5b-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'esign-26b5b.firebasestorage.app',
     measurementId: 'G-YGRRJLC680',
   );
@@ -55,6 +56,7 @@ class DefaultFirebaseOptions {
     appId: '1:901197727801:android:a2b4bab6e76b6c1e6365e8',
     messagingSenderId: '901197727801',
     projectId: 'esign-26b5b',
+    databaseURL: 'https://esign-26b5b-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'esign-26b5b.firebasestorage.app',
   );
 
@@ -63,6 +65,7 @@ class DefaultFirebaseOptions {
     appId: '1:901197727801:ios:a183b3aa1be163246365e8',
     messagingSenderId: '901197727801',
     projectId: 'esign-26b5b',
+    databaseURL: 'https://esign-26b5b-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'esign-26b5b.firebasestorage.app',
     iosBundleId: 'com.example.eSign',
   );
@@ -72,6 +75,7 @@ class DefaultFirebaseOptions {
     appId: '1:901197727801:ios:a183b3aa1be163246365e8',
     messagingSenderId: '901197727801',
     projectId: 'esign-26b5b',
+    databaseURL: 'https://esign-26b5b-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'esign-26b5b.firebasestorage.app',
     iosBundleId: 'com.example.eSign',
   );
@@ -82,7 +86,9 @@ class DefaultFirebaseOptions {
     messagingSenderId: '901197727801',
     projectId: 'esign-26b5b',
     authDomain: 'esign-26b5b.firebaseapp.com',
+    databaseURL: 'https://esign-26b5b-default-rtdb.europe-west1.firebasedatabase.app',
     storageBucket: 'esign-26b5b.firebasestorage.app',
     measurementId: 'G-SMDPR3BTYV',
   );
+
 }
