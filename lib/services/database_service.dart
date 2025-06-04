@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 class DatabaseService {
@@ -15,6 +16,15 @@ class DatabaseService {
     final DatabaseReference ref = _firebaseDatabase.ref().child(path);
     final DataSnapshot snapshot = await ref.get();
     return snapshot.exists ? snapshot : null;
+  }
+
+  Future<String?> getCurrentUserRole() async {
+    String id = FirebaseAuth.instance.currentUser!.uid;
+    DataSnapshot? snapshot = await DatabaseService().read(
+      path: "users/$id/role",
+    );
+    String role = snapshot!.value.toString();
+    return role;
   }
 
   Future<void> addUser({

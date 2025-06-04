@@ -5,6 +5,7 @@ import '../services/auth_service.dart';
 import 'package:firebase_database/firebase_database.dart';
 import '../services/database_service.dart';
 import 'login_page.dart';
+import 'role_based_nav.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key}) : super(key: key);
@@ -21,6 +22,8 @@ class _RegisterPage extends State<RegisterPage> {
   bool isChecked = false;
   TextEditingController controllerEmail = TextEditingController();
   TextEditingController controllerPassword = TextEditingController();
+  TextEditingController controllerUsername = TextEditingController();
+
   String erorMessege = '';
   void register() async {
     try {
@@ -29,11 +32,24 @@ class _RegisterPage extends State<RegisterPage> {
         password: controllerPassword.text,
       );
       final uid = userCredential.user!.uid;
+      authService.value.updateUsername(username: controllerUsername.text);
 
       await DatabaseService().addUser(
         uid: uid,
         email: controllerEmail.text,
         role: 'admin',
+      );
+      String? role = await DatabaseService().getCurrentUserRole();
+      print(userCredential.user!.displayName);
+
+      Navigator.of(context).push(
+        PageRouteBuilder(
+          pageBuilder:
+              (context, animation, secondaryAnimation) =>
+                  RoleBasedNav(role: role),
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        ),
       );
     } on FirebaseAuthException catch (e) {
       setState(() {
@@ -41,12 +57,6 @@ class _RegisterPage extends State<RegisterPage> {
       });
       print(erorMessege);
     }
-  }
-
-  void login() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (context) => const LoginPage()));
   }
 
   @override
@@ -72,25 +82,25 @@ class _RegisterPage extends State<RegisterPage> {
               ),
               SizedBox(height: 20),
 
-              // Align(
-              //   alignment: Alignment.centerLeft,
-              //   child: Text(
-              //     'Name',
-              //     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-              //   ),
-              // ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Name',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+              ),
 
-              // TextFormField(
-              //   controller: controllerEmail,
-              //   decoration: InputDecoration(
-              //     border: const OutlineInputBorder(),
-              //     hintText: 'John Doe',
-              //     hintStyle: const TextStyle(
-              //       color: Color.fromARGB(255, 144, 144, 144),
-              //     ),
-              //   ),
-              // ),
-              // SizedBox(height: 20),
+              TextFormField(
+                controller: controllerUsername,
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  hintText: 'John Doe',
+                  hintStyle: const TextStyle(
+                    color: Color.fromARGB(255, 144, 144, 144),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -219,7 +229,17 @@ class _RegisterPage extends State<RegisterPage> {
                   Container(
                     child: Center(
                       child: TextButton(
-                        onPressed: login,
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            PageRouteBuilder(
+                              pageBuilder:
+                                  (context, animation, secondaryAnimation) =>
+                                      LoginPage(),
+                              transitionDuration: Duration.zero,
+                              reverseTransitionDuration: Duration.zero,
+                            ),
+                          );
+                        },
                         child: Text(
                           "Sign in here",
                           style: TextStyle(

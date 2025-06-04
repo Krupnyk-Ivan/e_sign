@@ -8,6 +8,7 @@ import '../services/auth_service.dart';
 import '../pages/list_apply_page.dart';
 import '../pages/admin_page.dart';
 import 'reset_password_page.dart';
+import '../pages/role_based_nav.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -25,11 +26,6 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController controllerEmail = TextEditingController();
   TextEditingController controllerPassword = TextEditingController();
   String erorMessege = '';
-  void resetpassword() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (context) => const ResetPasswordPage()));
-  }
 
   void signIn() async {
     try {
@@ -38,37 +34,24 @@ class _LoginPageState extends State<LoginPage> {
         password: controllerPassword.text,
       );
       final id = userCredential.user?.uid;
-      DataSnapshot? snapshot = await DatabaseService().read(path: "users/$id");
-      print(snapshot?.value);
-      final role = snapshot!.child('role').value?.toString();
+      String? role = await DatabaseService().getCurrentUserRole();
+      print(userCredential.user!.displayName);
 
-      if (snapshot!.child('role').value?.toString() == 'admin') {
-        Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (context) => const AdminPage()));
-      }
-      if (snapshot!.child('role').value?.toString() == 'applicant') {
-        Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (context) => const ListApplyPage()));
-      }
-      if (snapshot!.child('role').value?.toString() == 'reviewer') {
-        Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (context) => const ListApplyPage()));
-      }
+      Navigator.of(context).push(
+        PageRouteBuilder(
+          pageBuilder:
+              (context, animation, secondaryAnimation) =>
+                  RoleBasedNav(role: role),
+          transitionDuration: Duration.zero,
+          reverseTransitionDuration: Duration.zero,
+        ),
+      );
     } on FirebaseAuthException catch (e) {
       setState(() {
         erorMessege = e.message ?? 'This is not working';
       });
       print(erorMessege);
     }
-  }
-
-  void register() {
-    Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (context) => const RegisterPage()));
   }
 
   @override
@@ -130,7 +113,17 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
                   TextButton(
-                    onPressed: resetpassword,
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        PageRouteBuilder(
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  ResetPasswordPage(),
+                          transitionDuration: Duration.zero,
+                          reverseTransitionDuration: Duration.zero,
+                        ),
+                      );
+                    },
                     child: Text(
                       'Forgot Password?',
                       style: TextStyle(
@@ -244,7 +237,17 @@ class _LoginPageState extends State<LoginPage> {
               Container(
                 child: Center(
                   child: TextButton(
-                    onPressed: register,
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        PageRouteBuilder(
+                          pageBuilder:
+                              (context, animation, secondaryAnimation) =>
+                                  RegisterPage(),
+                          transitionDuration: Duration.zero,
+                          reverseTransitionDuration: Duration.zero,
+                        ),
+                      );
+                    },
                     child: Text(
                       "Create an account",
                       style: TextStyle(
