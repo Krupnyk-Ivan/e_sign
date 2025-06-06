@@ -2,7 +2,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import '../services/auth_service.dart';
-import 'package:firebase_database/firebase_database.dart';
 import '../services/database_service.dart';
 import 'login_page.dart';
 import 'role_based_nav.dart';
@@ -37,11 +36,14 @@ class _RegisterPage extends State<RegisterPage> {
       await DatabaseService().addUser(
         uid: uid,
         email: controllerEmail.text,
-        role: 'admin',
+        role: 'appliciant',
       );
       String? role = await DatabaseService().getCurrentUserRole();
       print(userCredential.user!.displayName);
-
+      await authService.value.signIn(
+        email: controllerEmail.text,
+        password: controllerPassword.text,
+      );
       Navigator.of(context).push(
         PageRouteBuilder(
           pageBuilder:

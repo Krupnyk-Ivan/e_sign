@@ -1,12 +1,9 @@
 import 'package:e_sign/pages/register_page.dart';
 import 'package:e_sign/services/database_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import '../services/auth_service.dart';
-import '../pages/list_apply_page.dart';
-import '../pages/admin_page.dart';
 import 'reset_password_page.dart';
 import '../pages/role_based_nav.dart';
 
@@ -17,10 +14,19 @@ class LoginPage extends StatefulWidget {
   _LoginPageState createState() => _LoginPageState();
 }
 
-@override
-void initState() {}
-
 class _LoginPageState extends State<LoginPage> {
+  void checkAndNavigate() async {
+    String? role = await DatabaseService().getCurrentUserRole();
+    AuthService().authStateChanges;
+    print(AuthService().authStateChanges);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    checkAndNavigate();
+  }
+
   bool passwordVisible = true;
   bool isChecked = false;
   TextEditingController controllerEmail = TextEditingController();
@@ -29,15 +35,14 @@ class _LoginPageState extends State<LoginPage> {
 
   void signIn() async {
     try {
+      //TODO Add checks for null input data
+
       final userCredential = await authService.value.signIn(
         email: controllerEmail.text,
         password: controllerPassword.text,
       );
-      final id = userCredential.user?.uid;
       String? role = await DatabaseService().getCurrentUserRole();
-      print(userCredential.user!.displayName);
-
-      Navigator.of(context).push(
+      Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           pageBuilder:
               (context, animation, secondaryAnimation) =>
