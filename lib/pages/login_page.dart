@@ -18,7 +18,16 @@ class _LoginPageState extends State<LoginPage> {
   void checkAndNavigate() async {
     String? role = await DatabaseService().getCurrentUserRole();
     AuthService().authStateChanges;
-    print(AuthService().authStateChanges);
+    print(role);
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        pageBuilder:
+            (context, animation, secondaryAnimation) =>
+                RoleBasedNav(role: role),
+        transitionDuration: Duration.zero,
+        reverseTransitionDuration: Duration.zero,
+      ),
+    );
   }
 
   @override

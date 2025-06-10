@@ -18,6 +18,32 @@ class DatabaseService {
     return snapshot.exists ? snapshot : null;
   }
 
+  Future<List<Map<String, String>>> getUsers() async {
+    final snapshot = await DatabaseService().read(path: "users/");
+    if (snapshot == null || snapshot.value == null) return [];
+
+    final data = Map<String, dynamic>.from(snapshot.value as Map);
+    final users =
+        data.entries.map<Map<String, String>>((entry) {
+          final userData = Map<String, dynamic>.from(entry.value as Map);
+          return {
+            'id': entry.key,
+            'email': userData['email']?.toString() ?? 'no-email',
+            'role': userData['role']?.toString() ?? 'no-role',
+          };
+        }).toList();
+
+    return users;
+  }
+
+  Future<void> update({
+    required String path,
+    required Map<String, dynamic> data,
+  }) async {
+    final DatabaseReference ref = _firebaseDatabase.ref().child(path);
+    await ref.update(data);
+  }
+
   Future<String?> getCurrentUserRole() async {
     String id = FirebaseAuth.instance.currentUser!.uid;
     DataSnapshot? snapshot = await DatabaseService().read(

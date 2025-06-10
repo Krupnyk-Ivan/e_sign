@@ -26,69 +26,74 @@ class _ProfilePage extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(automaticallyImplyLeading: false),
-      body: Container(
-        padding: EdgeInsets.all(32),
-        child: ListView(
-          physics: NeverScrollableScrollPhysics(),
+      appBar: AppBar(
+        title: Text("My Profile"),
+        automaticallyImplyLeading: false,
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
           children: [
-            Column(
-              children: [
-                SizedBox(height: 10),
+            CircleAvatar(
+              radius: 50,
+              backgroundImage:
+                  url != null
+                      ? NetworkImage(url!)
+                      : NetworkImage(
+                        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwVLdSDmgrZN7TkzbHJb8dD0_7ASUQuERL2A&s",
+                      ),
+            ),
+            SizedBox(height: 12),
+            Text(
+              username ?? "No name available",
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
+            ),
+            SizedBox(height: 30),
 
-                CircleAvatar(
-                  radius: 50,
-                  backgroundImage:
-                      (url) != null
-                          ? NetworkImage(url!)
-                          : NetworkImage(
-                            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSwVLdSDmgrZN7TkzbHJb8dD0_7ASUQuERL2A&s",
-                          ),
-                ),
-                SizedBox(height: 10),
+            _buildSettingsCard(
+              icon: Icons.vpn_key,
+              title: "Add E-Key",
+              onTap: () {},
+            ),
 
-                Text(
-                  username ?? "No name available",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 40),
+            _buildSettingsCard(
+              icon: Icons.edit,
+              title: "Edit Profile",
+              onTap: () {},
+            ),
 
-                Padding(
-                  padding: EdgeInsetsDirectional.symmetric(
-                    horizontal: 8.0,
-                    vertical: 8.0,
-                  ),
-                ),
-                Card(
-                  child: ListTile(
-                    leading: Icon(Icons.picture_as_pdf),
-                    title: Text("Add E key"),
-                    trailing: Icon(Icons.chevron_right),
-                    onTap: () {},
-                  ),
-                ),
+            Divider(height: 40),
 
-                Card(
-                  child: ListTile(
-                    leading: Icon(Icons.edit),
-                    title: Text("Edit profile"),
-                    trailing: Icon(Icons.chevron_right),
-                    onTap: () {},
-                  ),
-                ),
-                Card(
-                  child: ListTile(
-                    leading: Icon(Icons.logout),
-                    title: Text("Log out"),
-                    trailing: Icon(Icons.chevron_right),
-                    onTap: loginOut,
-                  ),
-                ),
-              ],
+            _buildSettingsCard(
+              icon: Icons.logout,
+              title: "Log Out",
+              onTap: loginOut,
+              iconColor: Colors.red,
+              textColor: Colors.red,
             ),
           ],
         ),
       ),
     );
   }
+}
+
+Widget _buildSettingsCard({
+  required IconData icon,
+  required String title,
+  required VoidCallback onTap,
+  Color iconColor = Colors.black,
+  Color textColor = Colors.black,
+}) {
+  return Card(
+    elevation: 2,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    child: ListTile(
+      leading: Icon(icon, color: iconColor),
+      title: Text(title, style: TextStyle(color: textColor, fontSize: 16)),
+      trailing: Icon(Icons.chevron_right, color: Colors.grey),
+      onTap: onTap,
+    ),
+  );
 }
