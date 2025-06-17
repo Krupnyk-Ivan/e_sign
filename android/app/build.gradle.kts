@@ -13,6 +13,7 @@ android {
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
 
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -41,7 +42,11 @@ android {
         }
     }
 }
+dependencies {
+    implementation("org.bouncycastle:bcprov-jdk15to18:1.77")
+    implementation("org.bouncycastle:bcpkix-jdk15to18:1.77")
 
+}
 flutter {
     source = "../.."
 }
