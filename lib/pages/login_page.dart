@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:material_design_icons_flutter/material_design_icons_flutter.dart';
 import '../services/auth_service.dart';
 import 'reset_password_page.dart';
-import '../pages/role_based_nav.dart';
+import 'role_based_nav.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -33,7 +33,16 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void initState() {
     super.initState();
-    checkAndNavigate();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (ModalRoute.of(context)?.isCurrent == true) {
+      print("super");
+      checkAndNavigate();
+    }
   }
 
   bool passwordVisible = true;

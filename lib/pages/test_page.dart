@@ -54,17 +54,26 @@ class _TestPage extends State<TestPage> {
 
   Future<void> generatePfx() async {
     try {
+      final exists = await platform.invokeMethod<bool>('pfxExists', {
+        'alias': jksAlias.isNotEmpty ? jksAlias : 'testalias',
+      });
+
+      if (exists == true) {
+        print(" PFX already exists, skipping generation");
+        return;
+      }
+
       final pfxPath = await platform.invokeMethod<String>('generatePfx', {
         'password': jksPassword.isNotEmpty ? jksPassword : 'testpass',
         'alias': jksAlias.isNotEmpty ? jksAlias : 'testalias',
         'userId':
             jkUserId.isNotEmpty ? jkUserId : authService.value.currentUser!.uid,
       });
-      print('📦 PFX згенеровано: $authService.value.currentUser!.uid');
+      print(' PFX згенеровано: $authService.value.currentUser!.uid');
 
       if (pfxPath != null) {
         setState(() => generatedPfxPath = pfxPath);
-        print('📦 PFX згенеровано: $pfxPath');
+        print(' PFX згенеровано: $pfxPath');
       }
     } catch (e) {
       _showError('Помилка генерації PFX: $e');
@@ -101,7 +110,6 @@ class _TestPage extends State<TestPage> {
     }
 
     try {
-      // Call platform-specific method to sign with JKS
       final result = await platform.invokeMethod('signWithJKS', {
         'fileBytes': fileBytes,
         'keystorePath': jksPath,
@@ -116,10 +124,6 @@ class _TestPage extends State<TestPage> {
       print('JKS Hash: $hashStr');
       print('JKS Signature: $signatureStr');
       print('JKS Public Key: $publicKeyStr');
-
-      setState(() {
-        signatureBase64 = signatureStr;
-      });
     } catch (e) {
       _showError('Помилка підпису з JKS: $e');
     }
@@ -298,7 +302,7 @@ class _TestPage extends State<TestPage> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(isValid ? "✅ Підпис дійсний" : "❌ Підпис недійсний"),
+        content: Text(isValid ? " Підпис дійсний" : " Підпис недійсний"),
       ),
     );
   }
@@ -345,7 +349,7 @@ class _TestPage extends State<TestPage> {
                     if (signingMethod == 'JKS') ...[
                       ElevatedButton(
                         onPressed: generatePfx,
-                        child: Text('🔐 Generate PFX'),
+                        child: Text(' Generate PFX'),
                       ),
                       if (generatedPfxPath.isNotEmpty) ...[
                         SizedBox(height: 8),

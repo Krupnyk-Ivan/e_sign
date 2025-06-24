@@ -1,6 +1,17 @@
 import 'package:e_sign/services/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'login_page.dart';
+import 'dart:io';
+
+import 'package:e_sign/services/auth_service.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:cryptography/cryptography.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'dart:convert';
+import 'package:file_picker/file_picker.dart';
+import 'dart:typed_data';
+import 'package:e_sign/services/document_sign_service.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -10,6 +21,15 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePage extends State<ProfilePage> {
+  final storage = FlutterSecureStorage();
+  final algorithm = Ed25519();
+  String jksPath = '';
+  String jksPassword = '';
+  String jksAlias = '';
+  String generatedPfxPath = '';
+
+  String jkUserId = '';
+  static const platform = MethodChannel('document_signer');
   String? url = AuthService().currentUser!.photoURL;
   String? username = AuthService().currentUser?.displayName;
   void loginOut() {
@@ -21,6 +41,38 @@ class _ProfilePage extends State<ProfilePage> {
         reverseTransitionDuration: Duration.zero,
       ),
     );
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.red),
+    );
+  }
+
+  Future<void> generatePfx() async {
+    try {
+      final exists = await platform.invokeMethod<bool>('pfxExists', {
+        'alias': jksAlias.isNotEmpty ? jksAlias : 'testalias',
+      });
+
+      if (exists == true) {
+        print(" PFX already exists, skipping generation");
+        return;
+      }
+
+      final pfxPath = DocumentSignService.generatePfx(
+        password: 'testpass',
+        alias: 'testalias',
+        userId: authService.value.currentUser!.uid,
+      );
+      print(authService.value.currentUser!.uid);
+
+      if (pfxPath != null) {
+        print(' PFX згенеровано: $pfxPath');
+      }
+    } catch (e) {
+      _showError('Помилка генерації PFX: $e');
+    }
   }
 
   @override
@@ -54,7 +106,7 @@ class _ProfilePage extends State<ProfilePage> {
             _buildSettingsCard(
               icon: Icons.vpn_key,
               title: "Add E-Key",
-              onTap: () {},
+              onTap: generatePfx,
             ),
 
             _buildSettingsCard(

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 
@@ -10,6 +11,22 @@ class DatabaseService {
   }) async {
     final DatabaseReference ref = _firebaseDatabase.ref().child(path);
     await ref.set(data);
+  }
+
+  Stream<List<Map<String, String>>> getUsersStream() {
+    final ref = FirebaseDatabase.instance.ref('users');
+    return ref.onValue.map((event) {
+      final data = event.snapshot.value as Map<dynamic, dynamic>? ?? {};
+      final List<Map<String, String>> users = [];
+      data.forEach((key, value) {
+        users.add({
+          'id': key,
+          'email': value['email'] ?? '',
+          'role': value['role'] ?? 'applicant',
+        });
+      });
+      return users;
+    });
   }
 
   Future<DataSnapshot?> read({required String path}) async {
@@ -51,6 +68,41 @@ class DatabaseService {
     );
     String role = snapshot!.value.toString();
     return role;
+  }
+
+  Future<List<Map<String, dynamic>>> getReviewers() async {
+    List<Map<String, dynamic>> allReviewers = [];
+
+    try {
+      print("Fetching reviewers from Realtime Database...");
+      final DatabaseService _databaseService = DatabaseService();
+      final realtimeDbSnapshot = await _databaseService.read(path: "users/");
+
+      if (realtimeDbSnapshot != null && realtimeDbSnapshot.value != null) {
+        final data = Map<String, dynamic>.from(realtimeDbSnapshot.value as Map);
+        data.forEach((key, value) {
+          print(value);
+          if (value['role'] == 'reviewer') {
+            final reviewerData = Map<String, dynamic>.from(value);
+            reviewerData['id'] = key;
+            allReviewers.add(reviewerData);
+          }
+        });
+        print("Realtime DB reviewers found: ${data.length}");
+      } else {
+        print(
+          "No data found or snapshot is null in Realtime Database for users.",
+        );
+      }
+    } catch (e) {
+      print('Error getting reviewers from Realtime Database: $e');
+    }
+    final Map<String, Map<String, dynamic>> uniqueReviewers = {};
+    for (var reviewer in allReviewers) {
+      uniqueReviewers[reviewer['id']] = reviewer;
+    }
+    print(uniqueReviewers.values.toList());
+    return uniqueReviewers.values.toList();
   }
 
   Future<void> addUser({

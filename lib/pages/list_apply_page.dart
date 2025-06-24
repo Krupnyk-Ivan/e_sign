@@ -1,127 +1,198 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import '../shared/application_controller.dart';
+import '../shared/application_dialogs.dart';
 
 class ListApplyPage extends StatefulWidget {
   const ListApplyPage({Key? key}) : super(key: key);
 
   @override
-  _ListApplyPage createState() => _ListApplyPage();
+  _ListApplyPageState createState() => _ListApplyPageState();
 }
 
-class _ListApplyPage extends State<ListApplyPage> {
-  List<String> _mockDocuments = ["transcript.pdf", "cv.pdf"];
+class _ListApplyPageState extends State<ListApplyPage> {
+  late ApplicationController _controller;
+  late Stream<QuerySnapshot> _applicationsStream;
+  bool _isLoading = false;
 
-  List<Map<String, String>> _applications = [
-    {'id': '1', 'title': 'Internship at XYZ Corp', 'status': 'Pending'},
-    {'id': '2', 'title': 'Research Assistant at Uni', 'status': 'Approved'},
-    {'id': '3', 'title': 'Summer Practice in IT', 'status': 'Rejected'},
-  ];
-  void _showApplicationDetails(BuildContext context, Map<String, String> app) {
-    showModalBottomSheet(
-      context: context,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      isScrollControlled: true,
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            top: 16,
-            left: 16,
-            right: 16,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-          ),
-          child: Wrap(
-            children: [
-              Center(
-                child: Container(
-                  height: 5,
-                  width: 50,
-                  margin: EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-              ListTile(
-                leading: Icon(Icons.assignment),
-                title: Text(app['title'] ?? ''),
-                subtitle: Text("Status: ${app['status']}"),
-              ),
-              SizedBox(height: 16),
-              Text(
-                "Attached Documents",
-                style: TextStyle(fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 8),
-              ..._mockDocuments.map(
-                (doc) => ListTile(
-                  leading: Icon(Icons.picture_as_pdf, color: Colors.red),
-                  title: Text(doc),
-                  trailing: Icon(Icons.download),
-                  onTap: () {},
-                ),
-              ),
-              SizedBox(height: 8),
-              ElevatedButton.icon(
-                icon: Icon(Icons.attach_file),
-                label: Text("Attach Document"),
-                onPressed: () {
-                  setState(() {
-                    _mockDocuments.add(
-                      "new_document_${_mockDocuments.length + 1}.pdf",
-                    );
-                  });
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
-        );
-      },
+  @override
+  void initState() {
+    super.initState();
+    _initializeController();
+    _applicationsStream = _controller.getApplicationsStream();
+  }
+
+  void _initializeController() {
+    _controller = ApplicationController(
+      onError: _showError,
+      onSuccess: _showSuccess,
+      onLoadingChanged: (loading) => setState(() => _isLoading = loading),
     );
   }
 
-  void _createNewApplication() {
-    setState(() {
-      _applications.add({
-        'id': DateTime.now().millisecondsSinceEpoch.toString(),
-        'title': 'New Application',
-        'status': 'Pending',
-      });
-    });
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
-  void _editApplication(int index) {
-    final currentTitle = _applications[index]['title']!;
-    setState(() {
-      _applications[index]['title'] = "$currentTitle (Edited)";
-    });
+  void _showSuccess(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 
-  void _deleteApplication(int index) {
-    showDialog(
-      context: context,
-      builder:
-          (_) => AlertDialog(
-            title: Text('Delete Application'),
-            content: Text('Are you sure you want to delete this application?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () {
-                  setState(() {
-                    _applications.removeAt(index);
-                  });
-                  Navigator.pop(context);
-                },
-                child: Text('Delete', style: TextStyle(color: Colors.red)),
-              ),
-            ],
+  void _handleMenuAction(String action, DocumentSnapshot appDoc) {
+    switch (action) {
+      case 'edit':
+        ApplicationDialogs.showEditDialog(context, appDoc, _controller);
+        break;
+      case 'delete':
+        ApplicationDialogs.showDeleteDialog(context, appDoc, _controller);
+        break;
+      case 'sign':
+        ApplicationDialogs.showSignDialog(context, appDoc, _controller);
+        break;
+    }
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.assignment_outlined, size: 64, color: Colors.grey[400]),
+          const SizedBox(height: 16),
+          Text(
+            "No applications submitted yet.",
+            style: TextStyle(fontSize: 18, color: Colors.grey[600]),
           ),
+          const SizedBox(height: 8),
+          const Text(
+            "Tap the + button to create your first application",
+            style: TextStyle(color: Colors.grey),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(Object error) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error, size: 64, color: Colors.red),
+          const SizedBox(height: 16),
+          Text('Error: $error'),
+          ElevatedButton(
+            onPressed: () => setState(() {}),
+            child: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildApplicationCard(DocumentSnapshot appDoc) {
+    final appData = appDoc.data() as Map<String, dynamic>;
+    final status = appData['status'] ?? 'unknown';
+    final title = appData['title'] ?? 'Application';
+
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 2,
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: _controller.getStatusColor(status).withOpacity(0.1),
+          child: Icon(
+            _controller.getStatusIcon(status),
+            color: _controller.getStatusColor(status),
+          ),
+        ),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
+        subtitle: Row(
+          children: [
+            Icon(
+              Icons.circle,
+              size: 8,
+              color: _controller.getStatusColor(status),
+            ),
+            const SizedBox(width: 4),
+            Text(
+              status,
+              style: TextStyle(
+                color: _controller.getStatusColor(status),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        trailing: _buildPopupMenu(appDoc, status),
+        onTap:
+            () => ApplicationDialogs.showApplicationDetails(
+              context,
+              appDoc,
+              _controller,
+            ),
+      ),
+    );
+  }
+
+  Widget _buildPopupMenu(DocumentSnapshot appDoc, String status) {
+    return PopupMenuButton<String>(
+      onSelected: (value) => _handleMenuAction(value, appDoc),
+      itemBuilder:
+          (context) => [
+            const PopupMenuItem(
+              value: 'edit',
+              child: Row(
+                children: [Icon(Icons.edit), SizedBox(width: 8), Text('Edit')],
+              ),
+            ),
+            if (status.toLowerCase() == 'pending' ||
+                status.toLowerCase() == 'submitted')
+              const PopupMenuItem(
+                value: 'sign',
+                child: Row(
+                  children: [
+                    Icon(Icons.edit, color: Colors.green),
+                    SizedBox(width: 8),
+                    Text('Sign'),
+                  ],
+                ),
+              ),
+            const PopupMenuItem(
+              value: 'delete',
+              child: Row(
+                children: [
+                  Icon(Icons.delete, color: Colors.red),
+                  SizedBox(width: 8),
+                  Text('Delete'),
+                ],
+              ),
+            ),
+          ],
+    );
+  }
+
+  Widget _buildApplicationsList(List<DocumentSnapshot> docs) {
+    final sortedDocs = _controller.sortApplications(docs);
+
+    return ListView.builder(
+      itemCount: sortedDocs.length,
+      itemBuilder: (context, index) {
+        return _buildApplicationCard(sortedDocs[index]);
+      },
     );
   }
 
@@ -129,55 +200,47 @@ class _ListApplyPage extends State<ListApplyPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("My Applications"),
+        title: const Text("My Applications"),
         automaticallyImplyLeading: false,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () {
+              setState(() {});
+              _showSuccess('Applications refreshed');
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child:
-            _applications.isEmpty
-                ? Center(child: Text("No applications submitted yet."))
-                : ListView.builder(
-                  itemCount: _applications.length,
-                  itemBuilder: (context, index) {
-                    final app = _applications[index];
-                    return Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 2,
-                      margin: const EdgeInsets.symmetric(vertical: 8),
-                      child: ListTile(
-                        leading: Icon(Icons.assignment),
-                        title: Text(app['title'] ?? ''),
-                        subtitle: Text("Status: ${app['status']}"),
-                        trailing: PopupMenuButton<String>(
-                          onSelected: (value) {
-                            if (value == 'edit') _editApplication(index);
-                            if (value == 'delete') _deleteApplication(index);
-                          },
-                          itemBuilder:
-                              (context) => [
-                                PopupMenuItem(
-                                  value: 'edit',
-                                  child: Text('Edit'),
-                                ),
-                                PopupMenuItem(
-                                  value: 'delete',
-                                  child: Text('Delete'),
-                                ),
-                              ],
-                        ),
-                        onTap: () => _showApplicationDetails(context, app),
-                      ),
-                    );
-                  },
-                ),
+        child: StreamBuilder<QuerySnapshot>(
+          stream: _applicationsStream,
+          builder: (context, snapshot) {
+            if (snapshot.hasError) {
+              return _buildErrorState(snapshot.error!);
+            }
+
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              return _buildEmptyState();
+            }
+
+            return _buildApplicationsList(snapshot.data!.docs);
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _createNewApplication,
-        label: Text("New Application"),
-        icon: Icon(Icons.add),
+        onPressed:
+            () => ApplicationDialogs.showTemplateSelectionDialog(
+              context,
+              _controller,
+            ),
+        label: const Text("New Application"),
+        icon: const Icon(Icons.add),
       ),
     );
   }

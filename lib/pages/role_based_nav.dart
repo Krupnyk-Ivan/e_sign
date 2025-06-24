@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'admin_page.dart';
 import 'profile_page.dart';
 import 'list_apply_page.dart';
+import 'review_page.dart';
 
 class RoleBasedNav extends StatefulWidget {
   final String? role;
@@ -28,6 +29,13 @@ class _RoleBasedNavState extends State<RoleBasedNav> {
     }
     if (widget.role == "appliciant") {
       pages = [ListApplyPage(), ProfilePage()];
+      items = [
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+        BottomNavigationBarItem(icon: Icon(Icons.people), label: "Profile"),
+      ];
+    }
+    if (widget.role == "reviewer") {
+      pages = [ReviewPage(), ProfilePage()];
       items = [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
         BottomNavigationBarItem(icon: Icon(Icons.people), label: "Profile"),

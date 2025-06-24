@@ -64,7 +64,12 @@ class MainActivity: FlutterActivity() {
                     }
                 }
                 
-            
+            "pfxExists" -> {
+    val alias = call.argument<String>("alias") ?: return@setMethodCallHandler result.error("NO_ALIAS", "Alias required", null)
+    val file = File(context.cacheDir, "$alias.pfx")
+    result.success(file.exists())
+}
+
    "generatePfx" -> {
     try {
         val password = call.argument<String>("password") ?: throw Exception("Password is required")
@@ -308,15 +313,7 @@ fun verifySignature(originalFile: File, signatureFile: File): Boolean {
         signature.initSign(privateKey)
         signature.update(hash)
         val signatureBytes = signature.sign()
-        
-        val hashBase64 = Base64.encodeToString(hash, Base64.NO_WRAP)
-        val signatureBase64 = Base64.encodeToString(signatureBytes, Base64.NO_WRAP)
-        val publicKeyBase64 = Base64.encodeToString(publicKey.encoded, Base64.NO_WRAP)
-        
-        Log.d(TAG, "JKS signing completed successfully")
-        Log.d(TAG, "Signature algorithm used: $signatureAlgorithm")
-        Log.d(TAG, "Hash: $hashBase64")
-        Log.d(TAG, "Signature: $signatureBase64")
+      
        val certList = listOf(certificate)
 val certStore = JcaCertStore(certList)
 
